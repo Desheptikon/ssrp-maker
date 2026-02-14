@@ -2,90 +2,355 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>SAMP SSRP - Fixed Final</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAMP SSRP Maker - Mobile Ready</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #1a1a1a; color: white; padding: 20px; display: flex; gap: 20px; }
-        .panel { width: 380px; background: #252525; padding: 15px; border-radius: 8px; max-height: 95vh; overflow-y: auto; flex-shrink: 0; }
-        .canvas-area { width: 800px; height: 600px; border: 2px solid #444; position: relative; overflow: hidden; background: #000; cursor: move; }
-        canvas { display: block; }
-        textarea { width: 100%; height: 120px; background: #000; color: #ddd; border: 1px solid #444; padding: 8px; font-family: 'Arial'; font-weight: bold; margin-bottom: 10px; font-size: 13px; outline: none; resize: none; }
-        input[type="range"] { width: 100%; margin: 5px 0; }
-        label { font-size: 11px; color: #888; display: block; margin-top: 8px; font-weight: bold; }
-        button { width: 100%; padding: 12px; background: #3498db; border: none; color: white; cursor: pointer; margin-top: 10px; font-weight: bold; border-radius: 4px; }
-        .section { background: #111; padding: 12px; border-radius: 5px; margin-bottom: 15px; border-left: 3px solid #e67e22; }
-        h3 { font-size: 11px; margin: 0 0 10px 0; color: #e67e22; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #1a1a1a; 
+            color: white; 
+            padding: 10px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .panel { 
+            flex: 1;
+            min-width: 320px;
+            background: #252525; 
+            padding: 15px; 
+            border-radius: 8px; 
+            max-height: 95vh; 
+            overflow-y: auto;
+        }
+        
+        .canvas-wrapper {
+            flex: 2;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .canvas-container {
+            width: 100%;
+            max-width: 800px;
+            aspect-ratio: 4/3;
+            border: 2px solid #444;
+            background: #000;
+            position: relative;
+            overflow: auto;
+        }
+        
+        canvas { 
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+        
+        textarea { 
+            width: 100%; 
+            height: 120px; 
+            background: #000; 
+            color: #ddd; 
+            border: 1px solid #444; 
+            padding: 8px; 
+            font-family: Arial; 
+            font-weight: bold; 
+            margin-bottom: 10px; 
+            font-size: 13px; 
+            resize: vertical;
+        }
+        
+        input[type="range"] { 
+            width: 100%; 
+            margin: 5px 0; 
+        }
+        
+        label { 
+            font-size: 11px; 
+            color: #888; 
+            display: block; 
+            margin-top: 8px; 
+            font-weight: bold; 
+            text-transform: uppercase;
+        }
+        
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            background: #3498db; 
+            border: none; 
+            color: white; 
+            cursor: pointer; 
+            margin-top: 10px; 
+            font-weight: bold; 
+            border-radius: 4px; 
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        .section { 
+            background: #111; 
+            padding: 12px; 
+            border-radius: 5px; 
+            margin-bottom: 15px; 
+            border-left: 3px solid #e67e22; 
+        }
+        
+        h3 { 
+            font-size: 11px; 
+            margin: 0 0 10px 0; 
+            color: #e67e22; 
+        }
+        
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin: 10px 0;
+        }
+        
+        .filter-btn {
+            padding: 8px;
+            background: #333;
+            border: 1px solid #555;
+            color: #aaa;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover {
+            background: #444;
+            color: white;
+        }
+        
+        .filter-btn.active {
+            background: #e67e22;
+            color: white;
+            border-color: #e67e22;
+        }
+        
+        .zoom-controls {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+            justify-content: center;
+        }
+        
+        .zoom-btn {
+            padding: 8px 15px;
+            background: #444;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .panel {
+                max-height: none;
+                order: 2;
+            }
+            
+            .canvas-wrapper {
+                order: 1;
+            }
+            
+            .filter-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            textarea {
+                height: 100px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+            
+            .filter-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* Scrollbar Style */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #111;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #777;
+        }
     </style>
 </head>
 <body>
 
-<div class="panel">
-    <label>UPLOAD SCREENSHOT---Dev By Desheptikon</label>
-    <input type="file" id="upload" accept="image/*" style="margin-bottom:15px;">
-
-    <div class="section">
-        <h3>📝 TEKS ATAS</h3>
-        <textarea id="textTop">
-* Devor George Tes
-* Tes (( Devor George ))
-Devor George says: Sini lo! * Devor memukul meja *</textarea>
-        <label>X:</label><input type="range" id="topX" min="0" max="800" value="25" oninput="draw()">
-        <label>Y:</label><input type="range" id="topY" min="0" max="600" value="40" oninput="draw()">
+<div class="container">
+    <div class="canvas-wrapper">
+        <div class="canvas-container" id="canvasContainer">
+            <canvas id="canvas"></canvas>
+        </div>
+        
+        <div class="zoom-controls">
+            <button class="zoom-btn" onclick="zoomCanvas(0.8)">Zoom Out</button>
+            <button class="zoom-btn" onclick="zoomCanvas(1)">Reset</button>
+            <button class="zoom-btn" onclick="zoomCanvas(1.2)">Zoom In</button>
+        </div>
     </div>
 
-    <div class="section">
-        <h3>📝 TEKS BAWAH</h3>
-        <textarea id="textBottom">
-Hakeem Elmano says: Santai bro.. * Hakeem mengangkat tangan *
-* Hakeem bersandar di tembok sambil menatap Devor.</textarea>
-        <label>X:</label><input type="range" id="bottomX" min="0" max="800" value="25" oninput="draw()">
-        <label>Y:</label><input type="range" id="bottomY" min="0" max="600" value="500" oninput="draw()">
+    <div class="panel">
+        <label>📷 Upload Screenshot</label>
+        <input type="file" id="upload" accept="image/*" style="margin-bottom:15px; width:100%;">
+
+        <div class="section">
+            <h3>🎨 Image Filters</h3>
+            <div class="filter-grid">
+                <button class="filter-btn active" onclick="applyFilter('none')">None</button>
+                <button class="filter-btn" onclick="applyFilter('hd')">HD Sharp</button>
+                <button class="filter-btn" onclick="applyFilter('vintage')">Vintage</button>
+                <button class="filter-btn" onclick="applyFilter('dark')">Dark Mode</button>
+                <button class="filter-btn" onclick="applyFilter('bright')">Bright</button>
+                <button class="filter-btn" onclick="applyFilter('sunset')">Sunset</button>
+            </div>
+            
+            <label>Brightness</label>
+            <input type="range" id="brightness" min="50" max="150" value="100" oninput="draw()">
+            
+            <label>Contrast</label>
+            <input type="range" id="contrast" min="50" max="200" value="100" oninput="draw()">
+            
+            <label>Saturation</label>
+            <input type="range" id="saturation" min="0" max="200" value="100" oninput="draw()">
+        </div>
+
+        <div class="section">
+            <h3>📝 Text Atas</h3>
+            <textarea id="textTop">
+* Devor George leans against the wall.
+* The street is empty and quiet. (( Devor George ))
+Devor George says: Yo, what's good homie?</textarea>
+            <label>X Position</label>
+            <input type="range" id="topX" min="0" max="800" value="25" oninput="draw()">
+            <label>Y Position</label>
+            <input type="range" id="topY" min="0" max="600" value="40" oninput="draw()">
+        </div>
+
+        <div class="section">
+            <h3>📝 Text Bawah</h3>
+            <textarea id="textBottom">
+Hakeem Elmano says: Just chillin' in the hood.
+* Hakeem takes a sip from his 40oz.
+Devor George says: Real talk, let's get this paper.</textarea>
+            <label>X Position</label>
+            <input type="range" id="bottomX" min="0" max="800" value="25" oninput="draw()">
+            <label>Y Position</label>
+            <input type="range" id="bottomY" min="0" max="600" value="480" oninput="draw()">
+        </div>
+
+        <div class="section">
+            <h3>⚙️ Settings</h3>
+            <label>Image X</label>
+            <input type="range" id="imgX" min="-2000" max="2000" value="0" oninput="draw()">
+            <label>Image Y</label>
+            <input type="range" id="imgY" min="-2000" max="2000" value="0" oninput="draw()">
+            <label>Font Size</label>
+            <input type="range" id="fontSize" min="10" max="30" value="16" oninput="draw()">
+            <label>Line Spacing</label>
+            <input type="range" id="lineSpace" min="10" max="50" value="20" oninput="draw()">
+        </div>
+
+        <button onclick="draw()">🔄 Update Text</button>
+        <button onclick="exportImage()" style="background: #27ae60;">💾 Export 800x600 HD</button>
     </div>
-
-    <div class="section">
-        <h3>⚙️ PENGATURAN GAMBAR</h3>
-        <label>GESER X:</label><input type="range" id="imgX" min="-2000" max="2000" value="0" oninput="draw()">
-        <label>GESER Y:</label><input type="range" id="imgY" min="-2000" max="2000" value="0" oninput="draw()">
-        <label>FONT SIZE:</label><input type="range" id="fontSize" min="10" max="30" value="16" oninput="draw()">
-        <label>JARAK BARIS:</label><input type="range" id="lineSpace" min="10" max="50" value="20" oninput="draw()">
-    </div>
-
-    <button onclick="draw()">🔄 UPDATE TEKS</button>
-    <button onclick="exportImage()" style="background: #27ae60;">💾 DOWNLOAD 800x600</button>
-</div>
-
-<div class="canvas-area" id="canvasArea">
-    <canvas id="canvas"></canvas>
 </div>
 
 <script>
     const cvs = document.getElementById('canvas');
     const ctx = cvs.getContext('2d');
-    const canvasArea = document.getElementById('canvasArea');
+    const container = document.getElementById('canvasContainer');
     let img = new Image();
+    let currentFilter = 'none';
+    let currentZoom = 1;
     let isDragging = false;
     let startX, startY;
 
-    // Inisialisasi Canvas
+    // Set canvas size
     cvs.width = 800;
     cvs.height = 600;
 
-    // Mouse Drag untuk Geser Gambar
-    canvasArea.addEventListener('mousedown', (e) => {
+    // Mobile touch support
+    container.addEventListener('touchstart', handleStart, {passive: false});
+    container.addEventListener('touchmove', handleMove, {passive: false});
+    container.addEventListener('touchend', handleEnd);
+    
+    // Mouse support
+    container.addEventListener('mousedown', handleStart);
+    container.addEventListener('mousemove', handleMove);
+    container.addEventListener('mouseup', handleEnd);
+
+    function handleStart(e) {
         isDragging = true;
-        startX = e.clientX - parseInt(document.getElementById('imgX').value);
-        startY = e.clientY - parseInt(document.getElementById('imgY').value);
-    });
-
-    document.addEventListener('mousemove', (e) => {
-        if (isDragging) {
-            document.getElementById('imgX').value = e.clientX - startX;
-            document.getElementById('imgY').value = e.clientY - startY;
-            draw();
+        if (e.touches) {
+            startX = e.touches[0].clientX - parseInt(document.getElementById('imgX').value);
+            startY = e.touches[0].clientY - parseInt(document.getElementById('imgY').value);
+        } else {
+            startX = e.clientX - parseInt(document.getElementById('imgX').value);
+            startY = e.clientY - parseInt(document.getElementById('imgY').value);
         }
-    });
+    }
 
-    document.addEventListener('mouseup', () => isDragging = false);
+    function handleMove(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+        
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        
+        document.getElementById('imgX').value = clientX - startX;
+        document.getElementById('imgY').value = clientY - startY;
+        draw();
+    }
 
+    function handleEnd() {
+        isDragging = false;
+    }
+
+    // Upload handler
     document.getElementById('upload').onchange = (e) => {
         const reader = new FileReader();
         reader.onload = (ev) => {
@@ -95,43 +360,118 @@ Hakeem Elmano says: Santai bro.. * Hakeem mengangkat tangan *
         reader.readAsDataURL(e.target.files[0]);
     };
 
+    // Apply filter
+    function applyFilter(filter) {
+        currentFilter = filter;
+        
+        // Update button states
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
+        // Set default values for each filter
+        switch(filter) {
+            case 'hd':
+                document.getElementById('contrast').value = 120;
+                document.getElementById('brightness').value = 105;
+                document.getElementById('saturation').value = 110;
+                break;
+            case 'vintage':
+                document.getElementById('contrast').value = 90;
+                document.getElementById('brightness').value = 95;
+                document.getElementById('saturation').value = 70;
+                break;
+            case 'dark':
+                document.getElementById('brightness').value = 70;
+                document.getElementById('contrast').value = 130;
+                document.getElementById('saturation').value = 90;
+                break;
+            case 'bright':
+                document.getElementById('brightness').value = 120;
+                document.getElementById('contrast').value = 110;
+                document.getElementById('saturation').value = 120;
+                break;
+            case 'sunset':
+                document.getElementById('brightness').value = 110;
+                document.getElementById('contrast').value = 100;
+                document.getElementById('saturation').value = 150;
+                break;
+            default:
+                document.getElementById('brightness').value = 100;
+                document.getElementById('contrast').value = 100;
+                document.getElementById('saturation').value = 100;
+        }
+        
+        draw();
+    }
+
+    // Zoom function
+    function zoomCanvas(scale) {
+        currentZoom = scale;
+        cvs.style.transform = `scale(${scale})`;
+        cvs.style.transformOrigin = 'top left';
+    }
+
+    // Main draw function
     function draw() {
-        // Clear Canvas 800x600
         ctx.clearRect(0, 0, 800, 600);
         
         if (img.src) {
+            // Apply filters
+            const brightness = document.getElementById('brightness').value;
+            const contrast = document.getElementById('contrast').value;
+            const saturation = document.getElementById('saturation').value;
+            
+            ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
+            
+            // Add special filter effects
+            if (currentFilter === 'vintage') {
+                ctx.filter += ' sepia(30%)';
+            } else if (currentFilter === 'sunset') {
+                ctx.filter += ' hue-rotate(15deg)';
+            }
+            
             const imgX = parseInt(document.getElementById('imgX').value);
             const imgY = parseInt(document.getElementById('imgY').value);
-            // Gambar ditaruh di koordinat imgX, imgY tanpa mengubah ukuran canvas utama
             ctx.drawImage(img, imgX, imgY);
+            
+            // Reset filter for text
+            ctx.filter = 'none';
         }
 
+        // Text settings
         const fSize = parseInt(document.getElementById('fontSize').value);
         const lSpace = parseInt(document.getElementById('lineSpace').value);
         ctx.font = `bold ${fSize}px Arial`;
         ctx.shadowColor = "black";
-        ctx.shadowBlur = 1;
+        ctx.shadowBlur = 2;
         ctx.shadowOffsetX = 1.5;
         ctx.shadowOffsetY = 1.5;
         ctx.textBaseline = "top";
 
-        // Render Teks Atas
+        // Render top text
         const tx = parseInt(document.getElementById('topX').value);
         let ty = parseInt(document.getElementById('topY').value);
         document.getElementById('textTop').value.split('\n').forEach(line => {
-            if(line.trim()) { renderMixed(line, tx, ty); ty += lSpace; }
+            if(line.trim()) { 
+                renderMixed(line, tx, ty); 
+                ty += lSpace; 
+            }
         });
 
-        // Render Teks Bawah
+        // Render bottom text
         const bx = parseInt(document.getElementById('bottomX').value);
         let by = parseInt(document.getElementById('bottomY').value);
         document.getElementById('textBottom').value.split('\n').forEach(line => {
-            if(line.trim()) { renderMixed(line, bx, by); by += lSpace; }
+            if(line.trim()) { 
+                renderMixed(line, bx, by); 
+                by += lSpace; 
+            }
         });
     }
 
     function renderMixed(line, x, y) {
-        // Deteksi bagian bintang atau kurung ganda
         const parts = line.split(/(\*.*?\*|\(\(.*?\)\)|\*.*)/g);
         let curX = x;
 
@@ -144,12 +484,24 @@ Hakeem Elmano says: Santai bro.. * Hakeem mengangkat tangan *
     }
 
     function exportImage() {
-        if (!img.src) return alert("Upload gambar dulu!");
+        if (!img.src) return alert("Upload image first!");
+        
+        // Create new canvas for export (always 800x600)
+        const exportCanvas = document.createElement('canvas');
+        const exportCtx = exportCanvas.getContext('2d');
+        exportCanvas.width = 800;
+        exportCanvas.height = 600;
+        
+        // Draw everything to export canvas
+        exportCtx.drawImage(cvs, 0, 0);
+        
+        // Download
         const link = document.createElement('a');
-        link.download = 'ssrp_800x600.png';
-        link.href = cvs.toDataURL("image/png");
+        link.download = 'ssrp_800x600_hd.png';
+        link.href = exportCanvas.toDataURL("image/png", 1.0);
         link.click();
     }
 </script>
+
 </body>
 </html>
