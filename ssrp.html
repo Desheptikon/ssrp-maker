@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>SAMP SSRP - Fixed Final</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #1a1a1a; color: white; padding: 20px; display: flex; gap: 20px; }
+        .panel { width: 380px; background: #252525; padding: 15px; border-radius: 8px; max-height: 95vh; overflow-y: auto; flex-shrink: 0; }
+        .canvas-area { width: 800px; height: 600px; border: 2px solid #444; position: relative; overflow: hidden; background: #000; cursor: move; }
+        canvas { display: block; }
+        textarea { width: 100%; height: 120px; background: #000; color: #ddd; border: 1px solid #444; padding: 8px; font-family: 'Arial'; font-weight: bold; margin-bottom: 10px; font-size: 13px; outline: none; resize: none; }
+        input[type="range"] { width: 100%; margin: 5px 0; }
+        label { font-size: 11px; color: #888; display: block; margin-top: 8px; font-weight: bold; }
+        button { width: 100%; padding: 12px; background: #3498db; border: none; color: white; cursor: pointer; margin-top: 10px; font-weight: bold; border-radius: 4px; }
+        .section { background: #111; padding: 12px; border-radius: 5px; margin-bottom: 15px; border-left: 3px solid #e67e22; }
+        h3 { font-size: 11px; margin: 0 0 10px 0; color: #e67e22; }
+    </style>
+</head>
+<body>
+
+<div class="panel">
+    <label>UPLOAD SCREENSHOT---Dev By Desheptikon</label>
+    <input type="file" id="upload" accept="image/*" style="margin-bottom:15px;">
+
+    <div class="section">
+        <h3>📝 TEKS ATAS</h3>
+        <textarea id="textTop">
+* Devor George Tes
+* Tes (( Devor George ))
+Devor George says: Sini lo! * Devor memukul meja *</textarea>
+        <label>X:</label><input type="range" id="topX" min="0" max="800" value="25" oninput="draw()">
+        <label>Y:</label><input type="range" id="topY" min="0" max="600" value="40" oninput="draw()">
+    </div>
+
+    <div class="section">
+        <h3>📝 TEKS BAWAH</h3>
+        <textarea id="textBottom">
+Hakeem Elmano says: Santai bro.. * Hakeem mengangkat tangan *
+* Hakeem bersandar di tembok sambil menatap Devor.</textarea>
+        <label>X:</label><input type="range" id="bottomX" min="0" max="800" value="25" oninput="draw()">
+        <label>Y:</label><input type="range" id="bottomY" min="0" max="600" value="500" oninput="draw()">
+    </div>
+
+    <div class="section">
+        <h3>⚙️ PENGATURAN GAMBAR</h3>
+        <label>GESER X:</label><input type="range" id="imgX" min="-2000" max="2000" value="0" oninput="draw()">
+        <label>GESER Y:</label><input type="range" id="imgY" min="-2000" max="2000" value="0" oninput="draw()">
+        <label>FONT SIZE:</label><input type="range" id="fontSize" min="10" max="30" value="16" oninput="draw()">
+        <label>JARAK BARIS:</label><input type="range" id="lineSpace" min="10" max="50" value="20" oninput="draw()">
+    </div>
+
+    <button onclick="draw()">🔄 UPDATE TEKS</button>
+    <button onclick="exportImage()" style="background: #27ae60;">💾 DOWNLOAD 800x600</button>
+</div>
+
+<div class="canvas-area" id="canvasArea">
+    <canvas id="canvas"></canvas>
+</div>
+
+<script>
+    const cvs = document.getElementById('canvas');
+    const ctx = cvs.getContext('2d');
+    const canvasArea = document.getElementById('canvasArea');
+    let img = new Image();
+    let isDragging = false;
+    let startX, startY;
+
+    // Inisialisasi Canvas
+    cvs.width = 800;
+    cvs.height = 600;
+
+    // Mouse Drag untuk Geser Gambar
+    canvasArea.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startX = e.clientX - parseInt(document.getElementById('imgX').value);
+        startY = e.clientY - parseInt(document.getElementById('imgY').value);
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            document.getElementById('imgX').value = e.clientX - startX;
+            document.getElementById('imgY').value = e.clientY - startY;
+            draw();
+        }
+    });
+
+    document.addEventListener('mouseup', () => isDragging = false);
+
+    document.getElementById('upload').onchange = (e) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            img.src = ev.target.result;
+            img.onload = draw;
+        };
+        reader.readAsDataURL(e.target.files[0]);
+    };
+
+    function draw() {
+        // Clear Canvas 800x600
+        ctx.clearRect(0, 0, 800, 600);
+        
+        if (img.src) {
+            const imgX = parseInt(document.getElementById('imgX').value);
+            const imgY = parseInt(document.getElementById('imgY').value);
+            // Gambar ditaruh di koordinat imgX, imgY tanpa mengubah ukuran canvas utama
+            ctx.drawImage(img, imgX, imgY);
+        }
+
+        const fSize = parseInt(document.getElementById('fontSize').value);
+        const lSpace = parseInt(document.getElementById('lineSpace').value);
+        ctx.font = `bold ${fSize}px Arial`;
+        ctx.shadowColor = "black";
+        ctx.shadowBlur = 1;
+        ctx.shadowOffsetX = 1.5;
+        ctx.shadowOffsetY = 1.5;
+        ctx.textBaseline = "top";
+
+        // Render Teks Atas
+        const tx = parseInt(document.getElementById('topX').value);
+        let ty = parseInt(document.getElementById('topY').value);
+        document.getElementById('textTop').value.split('\n').forEach(line => {
+            if(line.trim()) { renderMixed(line, tx, ty); ty += lSpace; }
+        });
+
+        // Render Teks Bawah
+        const bx = parseInt(document.getElementById('bottomX').value);
+        let by = parseInt(document.getElementById('bottomY').value);
+        document.getElementById('textBottom').value.split('\n').forEach(line => {
+            if(line.trim()) { renderMixed(line, bx, by); by += lSpace; }
+        });
+    }
+
+    function renderMixed(line, x, y) {
+        // Deteksi bagian bintang atau kurung ganda
+        const parts = line.split(/(\*.*?\*|\(\(.*?\)\)|\*.*)/g);
+        let curX = x;
+
+        parts.forEach(part => {
+            if (!part) return;
+            ctx.fillStyle = (part.startsWith('*') || part.includes('((')) ? "#c2a2da" : "#ffffff";
+            ctx.fillText(part, curX, y);
+            curX += ctx.measureText(part).width;
+        });
+    }
+
+    function exportImage() {
+        if (!img.src) return alert("Upload gambar dulu!");
+        const link = document.createElement('a');
+        link.download = 'ssrp_800x600.png';
+        link.href = cvs.toDataURL("image/png");
+        link.click();
+    }
+</script>
+</body>
+</html>
